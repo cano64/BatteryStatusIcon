@@ -1,0 +1,6 @@
+BatteryStatusIcon	KEYWORD1
+
+update	KEYWORD2
+setLevel	KEYWORD2
+draw	KEYWORD2
+setVoltageInterval KEYWORD2

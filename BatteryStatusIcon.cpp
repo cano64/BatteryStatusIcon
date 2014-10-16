@@ -7,23 +7,34 @@
 #include "BatteryStatusIcon.h"
 
 
-BatteryStatusIcon::BatteryStatusIcon(LiquidCrystal *alcd, uint8_t ac) : lcd(alcd), c(ac), level(0), voltLow(1000), voltHigh(3000) {
+BatteryStatusIcon::BatteryStatusIcon(LiquidCrystal *alcd, uint8_t ac, uint16_t low, uint16_t high) : 
+  lcd(alcd), c(ac), level(0), percent(0), voltLow(low), voltHigh(high) 
+{
 
 }
 
 void BatteryStatusIcon::update(uint16_t volt) {
   if (volt <= this->voltLow) {
     this->setLevel(0);
+    this->percent = 0;
   } else if (volt >= this->voltHigh) {
     this->setLevel(BATTERY_STATUS_NUM_STATES-1);
+    this->percent = 99; //use 99 as maximum instead of 100 to fit in two digits
   } else {
     this->setLevel(map(volt, this->voltLow, this->voltHigh, 0, BATTERY_STATUS_NUM_STATES-1));
+    this->percent = (map(volt, this->voltLow, this->voltHigh, 0, 99));
   }
 }
 
 
 void BatteryStatusIcon::draw() {
   this->lcd->write(this->c);
+}
+
+
+void BatteryStatusIcon::draw(uint8_t x, uint8_t y) {
+  this->lcd->setCursor(x, y);
+  this->draw();
 }
 
 

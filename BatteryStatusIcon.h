@@ -11,7 +11,7 @@
 #include "Arduino.h"
 #include "LiquidCrystal.h"
 
-#define BATTERY_STATUS_NUM_STATES 6
+#define BATTERY_STATUS_NUM_STATES 7
 
 class BatteryStatusIcon {
 
@@ -23,6 +23,8 @@ class BatteryStatusIcon {
     uint8_t percent;
     uint16_t voltLow;
     uint16_t voltHigh;
+    uint16_t voltOld;
+    uint16_t voltSchmidt;
     
     BatteryStatusIcon(LiquidCrystal *alcd, uint8_t ac, uint16_t low, uint16_t high); //the constructor
     void draw();

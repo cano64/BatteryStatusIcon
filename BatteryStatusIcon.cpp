@@ -8,12 +8,19 @@
 
 
 BatteryStatusIcon::BatteryStatusIcon(LiquidCrystal *alcd, uint8_t ac, uint16_t low, uint16_t high) : 
-  lcd(alcd), c(ac), level(0), percent(0), voltLow(low), voltHigh(high) 
+  lcd(alcd), c(ac), level(0), percent(0), voltLow(low), voltHigh(high), voltOld(0), voltSchmidt((high-low)/100)
 {
-
+	//this->setLevel(0);
 }
 
 void BatteryStatusIcon::update(uint16_t volt) {
+  //filter out oscillations, the new value must be at least voltSchmidt from the old value
+  this->lcd->createChar(this->c, BatteryStatusIcon::batteryStatusIcons[this->level]);
+  if (volt >= this->voltOld) {
+    if (volt - this->voltOld < this->voltSchmidt) return;
+  } else if (volt < this->voltOld) {
+    if (this->voltOld - volt < this->voltSchmidt) return;
+  }
   if (volt <= this->voltLow) {
     this->setLevel(0);
     this->percent = 0;
@@ -40,9 +47,18 @@ void BatteryStatusIcon::draw(uint8_t x, uint8_t y) {
 
 void BatteryStatusIcon::setLevel(uint8_t alevel) {
   if (alevel >= BATTERY_STATUS_NUM_STATES) alevel = BATTERY_STATUS_NUM_STATES-1;
-  if (this->level != alevel) {
+  if (1) {
+  //if (this->level != alevel) {
     this->level = alevel;
     this->lcd->createChar(this->c, BatteryStatusIcon::batteryStatusIcons[this->level]);
+  }
+  if (this->level == 0) { //battery empty, blink
+    if ((millis() / 1000) % 2) {
+      this->lcd->createChar(this->c, BatteryStatusIcon::batteryStatusIcons[this->level]);
+    } else {
+      uint8_t empty[8] = {0,0,0,0,0,0,0,0};
+      this->lcd->createChar(this->c, empty);
+    }
   }
 }
 
@@ -63,6 +79,16 @@ uint8_t BatteryStatusIcon::batteryStatusIcons[BATTERY_STATUS_NUM_STATES][8] = {
     0b10001,
     0b10001,
     0b10001,
+    0b11111
+  },
+  {
+    0b01110,
+    0b11111,
+    0b10001,
+    0b10001,
+    0b10001,
+    0b10001,
+    0b10011,
     0b11111
   },
   {
